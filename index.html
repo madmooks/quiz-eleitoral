@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz Eleitoral: Lula vs. Flávio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            lula: '#ef4444',
+                            flavio: '#3b82f6'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-red-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-3xl mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <span class="bg-gradient-to-r from-red-500 to-blue-500 text-transparent bg-clip-text font-bold text-xl">Bússola Eleitoral</span>
+            </div>
+            <span class="text-xs px-2.5 py-1 rounded-full bg-slate-800 text-slate-300 font-medium">Lula vs. Flávio</span>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-xl w-full mx-auto px-4 py-8 flex-grow flex flex-col justify-center">
+
+        <!-- Welcome Screen -->
+        <div id="welcome-screen" class="space-y-6 text-center">
+            <div class="inline-block p-3 bg-slate-900 border border-slate-800 rounded-2xl mb-2">
+                <svg class="w-10 h-10 mx-auto text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012-2m-6 9l2 2 4-4"/></svg>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">Qual candidato está mais próximo das suas ideias?</h1>
+            <p class="text-slate-400 text-sm sm:text-base max-w-md mx-auto">
+                Responda a perguntas curtas e diretas baseadas nos planos de governo oficiais de <strong>Lula</strong> e <strong>Flávio</strong>. As alternativas aparecem de forma embaralhada e, no final, você verá as citações de cada escolha.
+            </p>
+            <div class="pt-4">
+                <button onclick="startQuiz()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-red-600 to-blue-600 hover:from-red-500 hover:to-blue-500 text-white font-semibold rounded-xl shadow-lg shadow-blue-900/20 transition-all duration-200">
+                    Começar Quiz
+                </button>
+            </div>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" class="hidden space-y-6">
+            <!-- Progress Bar -->
+            <div class="space-y-2">
+                <div class="flex justify-between text-xs font-medium text-slate-400">
+                    <span id="question-counter">Pergunta 1 de 8</span>
+                    <span id="progress-percent">12%</span>
+                </div>
+                <div class="w-full h-1.5 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                    <div id="progress-bar" class="h-full bg-gradient-to-r from-red-500 to-blue-500 transition-all duration-300" style="width: 12.5%;"></div>
+                </div>
+            </div>
+
+            <!-- Question Card -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl">
+                <span id="question-category" class="inline-block text-xs font-semibold px-2.5 py-1 bg-slate-800 text-slate-300 rounded-md">Economia</span>
+                <h2 id="question-title" class="text-lg sm:text-xl font-semibold leading-snug text-slate-100">Carregando pergunta...</h2>
+                
+                <!-- Options Container -->
+                <div id="options-container" class="space-y-3 pt-2">
+                    <!-- Dynamic Options -->
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center text-xs text-slate-500 px-2">
+                <span>Responda com base na sua convicção</span>
+                <button onclick="prevQuestion()" id="prev-btn" class="hidden hover:text-slate-300 transition-colors">Voltar pergunta anterior</button>
+            </div>
+        </div>
+
+        <!-- Result Screen -->
+        <div id="result-screen" class="hidden space-y-6">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl text-center">
+                <span class="text-xs font-semibold px-3 py-1 bg-slate-800 text-slate-300 rounded-full">Resultado da Análise</span>
+                
+                <div class="space-y-2">
+                    <p class="text-slate-400 text-sm">O candidato mais alinhado às suas respostas é:</p>
+                    <h2 id="winner-name" class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">-</h2>
+                </div>
+
+                <!-- Match Meters -->
+                <div class="space-y-4 pt-2 text-left bg-slate-950/50 p-4 rounded-xl border border-slate-800/80">
+                    <div>
+                        <div class="flex justify-between text-sm font-medium mb-1">
+                            <span class="text-red-400">Lula</span>
+                            <span id="lula-percent">0%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="lula-bar" class="h-full bg-red-500 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-sm font-medium mb-1">
+                            <span class="text-blue-400">Flávio</span>
+                            <span id="flavio-percent">0%</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-900 rounded-full overflow-hidden">
+                            <div id="flavio-bar" class="h-full bg-blue-500 transition-all duration-500" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <p id="winner-description" class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                    -
+                </p>
+            </div>
+
+            <!-- Citations / Audit Section -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4 shadow-xl">
+                <h3 class="text-base font-semibold text-white border-b border-slate-800 pb-3">Citações e Fontes das Suas Escolhas</h3>
+                <div id="citations-container" class="space-y-4 text-sm text-slate-300">
+                    <!-- Dynamic Citations -->
+                </div>
+
+                <div class="pt-4 text-center">
+                    <button onclick="restartQuiz()" class="w-full sm:w-auto px-8 py-3 bg-slate-800 hover:bg-slate-700 text-white font-semibold rounded-xl transition-all duration-200 border border-slate-700">
+                        Refazer Quiz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 py-6 text-center text-xs text-slate-600">
+        <p>Baseado em diretrizes oficiais registradas e coberturas de planos de governo.</p>
+    </footer>
+
+    <script>
+        const questions = [
+            {
+                category: "Economia e Estado",
+                question: "Qual deve ser o papel principal do Estado na economia?",
+                options: [
+                    { 
+                        text: "Forte atuação estatal, investimentos públicos e fortalecimento de empresas estatais.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (TSE) / R7 (2026): O programa orienta que as empresas estatais são ferramentas fundamentais para o desenvolvimento e o crescimento produtivo." 
+                    },
+                    { 
+                        text: "Mínima intervenção estatal, privatizações amplas e foco no livre mercado.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Proposta de retomada de privatizações, enxugamento da máquina administrativa e desestatização." 
+                    }
+                ]
+            },
+            {
+                category: "Impostos e Tributação",
+                question: "Sobre a reforma tributária e impostos, você apoia:",
+                options: [
+                    { 
+                        text: "Tributação progressiva maior sobre grandes fortunas, lucros e dividendos.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (Congresso em Foco, 2026): Estabelece como objetivo a continuidade de políticas de progressividade tributária." 
+                    },
+                    { 
+                        text: "Simplificação de impostos com foco em desoneração fiscal e redução da carga geral.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Revisão da reforma tributária, redução do IVA e diminuição de encargos e impostos sobre eletricidade e combustíveis." 
+                    }
+                ]
+            },
+            {
+                category: "Programas Sociais",
+                question: "Em relação aos programas de transferência de renda e assistência:",
+                options: [
+                    { 
+                        text: "Expansão de redes de proteção social robustas e programas de combate à fome integrados.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (UOL, 2026): Manutenção e fortalecimento contínuo do Bolsa Família e ampliação de políticas de segurança alimentar e estoques reguladores." 
+                    },
+                    { 
+                        text: "Manutenção condicionada a incentivos de empregabilidade e rigor no cadastro.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Regras focadas em eficiência, proibição do uso de benefícios em apostas e integração ao mercado de trabalho." 
+                    }
+                ]
+            },
+            {
+                category: "Segurança Pública",
+                question: "Qual diretriz principal você defende para a segurança pública?",
+                options: [
+                    { 
+                        text: "Foco em inteligência financeira contra o crime organizado, integração policial e políticas sociais.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (Congresso em Foco, 2026): Foco na asfixia financeira do crime organizado, investigação financeira, lavagem de dinheiro e integração via PEC da Segurança." 
+                    },
+                    { 
+                        text: "Endurecimento de penas, combate frontal à criminalidade e apoio jurídico às forças policiais.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Eixo 'Brasil sem Medo' com proposta de quadruplicar penas para roubo de celulares e dobrar investimentos federais na área." 
+                    }
+                ]
+            },
+            {
+                category: "Meio Ambiente",
+                question: "Como conciliar o desenvolvimento econômico e o meio ambiente?",
+                options: [
+                    { 
+                        text: "Rigorosa fiscalização ambiental, transição energética verde e combate ao desmatamento ilegal.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (UOL, 2026): Meta de alcançar desmatamento líquido zero até 2030, apostando em energias renováveis e baixo carbono." 
+                    },
+                    { 
+                        text: "Desburocratização de licenças ambientais e fomento ao agronegócio produtivo com segurança jurídica.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Zerar o desmatamento ilegal revendo superposições de atribuições entre órgãos de fiscalização." 
+                    }
+                ]
+            },
+            {
+                category: "Trabalho e Direitos",
+                question: "Sobre as leis trabalhistas e relações de emprego:",
+                options: [
+                    { 
+                        text: "Valorização sindical, ampliação de direitos e forte proteção trabalhista.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (Congresso em Foco, 2026): Atuação pela redução da jornada de trabalho para 40 horas semanais e valorização do salário mínimo." 
+                    },
+                    { 
+                        text: "Flexibilização de contratos, estímulo ao empreendedorismo individual e carteira verde/amarela.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Criação do programa Minha Primeira Empresa e banco nacional de vagas." 
+                    }
+                ]
+            },
+            {
+                category: "Saúde e Educação",
+                question: "Quais são as prioridades para investimentos em serviços básicos?",
+                options: [
+                    { 
+                        text: "Fortalecimento e expansão maciça do SUS e do ensino público gratuito em todos os níveis.", 
+                        candidate: "Lula",
+                        citation: "Plano de Governo Lula (UOL, 2026): Expansão contínua do programa Mais Médicos, institutos federais e escolas em tempo integral." 
+                    },
+                    { 
+                        text: "Parcerias público-privadas (PPPs), autonomia escolar e foco em eficiência e gestão.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (UOL/Exame, 2026): Proposta de vouchers para creches, telessaúde e uso da capacidade ociosa de hospitais privados." 
+                    }
+                ]
+            },
+            {
+                category: "Liberdade e Costumes",
+                question: "Qual a sua visão sobre diretrizes educacionais e pautas de costumes?",
+                options: [
+                    { 
+                        text: "Educação plural, inclusiva e com diretrizes federais voltadas a direitos humanos e diversidade.", 
+                        candidate: "Lula",
+                        citation: "Diretrizes programáticas e alinhamento político voltados à inclusão social e proteção de minorias." 
+                    },
+                    { 
+                        text: "Defesa de valores tradicionais da família, liberdade de ensino e pautas conservadoras.", 
+                        candidate: "Flávio",
+                        citation: "Plano de Governo Flávio Bolsonaro (Exame, 2026): Expansão de escolas cívico-militares e diretrizes voltadas a valores tradicionais." 
+                    }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userChoices = []; // Guardará { questionIndex, selectedOption, candidate }
+
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        
+        const questionCategory = document.getElementById('question-category');
+        const questionTitle = document.getElementById('question-title');
+        const optionsContainer = document.getElementById('options-container');
+        const questionCounter = document.getElementById('question-counter');
+        const progressPercent = document.getElementById('progress-percent');
+        const progressBar = document.getElementById('progress-bar');
+        const prevBtn = document.getElementById('prev-btn');
+
+        // Função utilitária para embaralhar array (Fisher-Yates)
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        let shuffledOptionsPerQuestion = [];
+
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            userChoices = [];
+            // Embaralhar as opções de cada pergunta ao iniciar o quiz
+            shuffledOptionsPerQuestion = questions.map(q => shuffleArray(q.options));
+            
+            welcomeScreen.classList.add('hidden');
+            quizScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            const currentOptions = shuffledOptionsPerQuestion[currentQuestionIndex];
+
+            questionCategory.textContent = q.category;
+            questionTitle.textContent = q.question;
+            
+            questionCounter.textContent = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+            const pct = Math.round(((currentQuestionIndex + 1) / questions.length) * 100);
+            progressPercent.textContent = `${pct}%`;
+            progressBar.style.width = `${pct}%`;
+
+            if (currentQuestionIndex > 0) {
+                prevBtn.classList.remove('hidden');
+            } else {
+                prevBtn.classList.add('hidden');
+            }
+
+            optionsContainer.innerHTML = '';
+            currentOptions.forEach((opt) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 rounded-xl bg-slate-950/60 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 transition-all duration-200 flex items-center justify-between group text-sm sm:text-base";
+                btn.innerHTML = `
+                    <span class="text-slate-200 group-hover:text-white pr-4">${opt.text}</span>
+                    <span class="w-5 h-5 rounded-full border border-slate-700 flex-shrink-0 flex items-center justify-center group-border-slate-500">
+                        <span class="w-2 h-2 rounded-full bg-transparent group-hover:bg-slate-400 transition-colors"></span>
+                    </span>
+                `;
+                btn.onclick = () => selectOption(opt);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectOption(opt) {
+            userChoices[currentQuestionIndex] = {
+                question: questions[currentQuestionIndex].question,
+                category: questions[currentQuestionIndex].category,
+                text: opt.text,
+                candidate: opt.candidate,
+                citation: opt.citation
+            };
+
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questions.length) {
+                loadQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+
+        function showResults() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            let lulaCount = userChoices.filter(item => item.candidate === 'Lula').length;
+            let flavioCount = userChoices.filter(item => item.candidate === 'Flávio').length;
+            let total = questions.length;
+
+            let lulaPct = Math.round((lulaCount / total) * 100);
+            let flavioPct = Math.round((flavioCount / total) * 100);
+
+            document.getElementById('lula-percent').textContent = `${lulaPct}%`;
+            document.getElementById('lula-bar').style.width = `${lulaPct}%`;
+
+            document.getElementById('flavio-percent').textContent = `${flavioPct}%`;
+            document.getElementById('flavio-bar').style.width = `${flavioPct}%`;
+
+            const winnerName = document.getElementById('winner-name');
+            const winnerDesc = document.getElementById('winner-description');
+
+            if (lulaCount > flavioCount) {
+                winnerName.textContent = "Lula";
+                winnerName.className = "text-3xl sm:text-4xl font-extrabold tracking-tight text-red-500";
+                winnerDesc.textContent = `As suas respostas demonstraram um alinhamento de ${lulaPct}% com as propostas do plano de governo de Lula, que priorizam a forte atuação do Estado na economia, ampliação de direitos sociais e investimentos públicos em serviços essenciais.`;
+            } else if (flavioCount > lulaCount) {
+                winnerName.textContent = "Flávio";
+                winnerName.className = "text-3xl sm:text-4xl font-extrabold tracking-tight text-blue-500";
+                winnerDesc.textContent = `As suas respostas demonstraram um alinhamento de ${flavioPct}% com as propostas do plano de governo de Flávio, que priorizam o livre mercado, a redução da intervenção estatal, desonerações e pautas voltadas à segurança e valores tradicionais.`;
+            } else {
+                winnerName.textContent = "Empate / Visão Mista";
+                winnerName.className = "text-3xl sm:text-4xl font-extrabold tracking-tight text-purple-400";
+                winnerDesc.textContent = `As suas respostas dividiram-se igualmente (50% para cada lado), indicando pontos de contato e preferências equilibradas entre as diferentes diretrizes de governo apresentadas.`;
+            }
+
+            // Renderizar Citações
+            const citationsContainer = document.getElementById('citations-container');
+            citationsContainer.innerHTML = '';
+
+            userChoices.forEach((choice, index) => {
+                const div = document.createElement('div');
+                div.className = "p-4 rounded-xl bg-slate-950/50 border border-slate-800 space-y-1.5";
+                const candidateColor = choice.candidate === 'Lula' ? 'text-red-400' : 'text-blue-400';
+                div.innerHTML = `
+                    <div class="flex justify-between items-center text-xs text-slate-400">
+                        <span class="font-semibold text-slate-300">Q${index + 1}: ${choice.category}</span>
+                        <span class="font-bold ${candidateColor}">Escolha: ${choice.candidate}</span>
+                    </div>
+                    <p class="text-xs text-slate-200 italic">“${choice.text}”</p>
+                    <div class="text-[11px] text-slate-400 pt-1 border-t border-slate-900 mt-2">
+                        <strong>Fonte/Citação:</strong> ${choice.citation}
+                    </div>
+                `;
+                citationsContainer.appendChild(div);
+            });
+        }
+
+        function restartQuiz() {
+            startQuiz();
+        }
+    </script>
+</body>
+</html>
